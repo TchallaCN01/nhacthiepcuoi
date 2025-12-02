@@ -1,14 +1,505 @@
 
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>AutoPlay Music</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Thiệp Mời — Đức Mạnh & Khánh Linh</title>
+<meta name="description" content="Thiệp mời cưới - Đức Mạnh & Khánh Linh. Click RSVP để phản hồi." />
+
+<style>
+  :root{
+    --accent:#d77ea3;
+    --accent-dark:#b05a83;
+    --bg:#fffaf6;
+    --card:#ffffffcc;
+    --glass: rgba(255,255,255,0.6);
+    --shadow: 0 8px 30px rgba(0,0,0,0.12);
+    --radius:18px;
+    --fz-lg: clamp(1.6rem, 3.6vw, 3.2rem);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg,#fffaf6 0%, #fff 60%);
+    color:#222;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    line-height:1.4;
+  }
+
+  /* Hero */
+  .hero{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    padding:3rem 1rem;
+    text-align:center;
+  }
+  .hero__bg{
+    position:absolute;
+    inset:0;
+    background-image: url('https://images.unsplash.com/photo-1503264116251-35a269479413?q=80&w=1600&auto=format&fit=crop'); /* thay link */
+    background-size:cover;
+    background-position:center;
+    filter: blur(6px) saturate(110%) brightness(0.95);
+    transform:scale(1.05);
+    z-index:0;
+  }
+  .hero__overlay{
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(255,250,246,0.35), rgba(255,255,255,0.25));
+    z-index:1;
+  }
+  .card{
+    position:relative;
+    z-index:2;
+    width:min(980px,96%);
+    background:var(--card);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:2.25rem;
+    backdrop-filter: blur(6px);
+  }
+  .names{
+    font-family: "Playfair Display", serif;
+    font-size: var(--fz-lg);
+    font-weight:700;
+    color:var(--accent-dark);
+    margin:0 0 .4rem 0;
+    letter-spacing:0.02em;
+    transform-origin:center;
+    opacity:0;
+    transform: translateY(20px) scale(.98);
+    animation:fadeUp 900ms cubic-bezier(.2,.9,.3,1) forwards .3s;
+  }
+  .subtitle{
+    font-size: clamp(.9rem, 1.6vw, 1.05rem);
+    color:#6b6b6b;
+    margin: 0 0 1.2rem 0;
+    opacity:0;
+    transform: translateY(12px);
+    animation:fadeUp 900ms cubic-bezier(.2,.9,.3,1) forwards .5s;
+  }
+
+  .meta{
+    display:flex;
+    gap:1rem;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin:1rem 0 1.5rem 0;
+    opacity:0;
+    transform: translateY(8px);
+    animation:fadeUp 900ms cubic-bezier(.2,.9,.3,1) forwards .7s;
+  }
+  .meta .pill{
+    background: linear-gradient(180deg,#fff,#fff0);
+    border-radius:999px;
+    padding:.55rem .85rem;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    font-weight:600;
+    color:#444;
+  }
+
+  .controls{
+    display:flex;
+    gap:0.75rem;
+    justify-content:center;
+    margin-top:1rem;
+  }
+  .btn{
+    border:0;
+    cursor:pointer;
+    padding:.6rem 1rem;
+    border-radius:12px;
+    font-weight:700;
+    background:var(--accent);
+    color:white;
+    box-shadow: 0 6px 18px rgba(183,112,146,0.18);
+    transition:transform .14s ease, box-shadow .14s ease, opacity .12s;
+  }
+  .btn.secondary{
+    background:transparent;
+    color:var(--accent-dark);
+    border:2px solid rgba(176,90,131,0.12);
+    box-shadow:none;
+  }
+  .btn:active{transform:translateY(2px) scale(.996)}
+
+  /* RSVP modal */
+  .modal{
+    position:fixed;
+    inset:0;
+    display:grid;
+    place-items:center;
+    background:rgba(8,8,10,0.45);
+    z-index:40;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease;
+  }
+  .modal.open{opacity:1; pointer-events:auto}
+  .modal__card{
+    width:min(680px,94%);
+    border-radius:14px;
+    background:var(--glass);
+    padding:1.25rem;
+    box-shadow:var(--shadow);
+    transform: translateY(18px) scale(.995);
+    transition:transform .26s cubic-bezier(.2,.9,.3,1);
+    backdrop-filter: blur(6px);
+  }
+  .modal.open .modal__card{transform: translateY(0) scale(1)}
+
+  form .row{display:flex; gap:.6rem; margin:.55rem 0;}
+  input[type="text"], input[type="email"], textarea{
+    flex:1;
+    padding:.7rem .85rem;
+    border-radius:10px;
+    border:1px solid rgba(0,0,0,0.06);
+    font-size:1rem;
+    outline:none;
+  }
+  textarea{min-height:110px; resize:vertical}
+
+  /* timeline / sections */
+  .sections{
+    padding:2.4rem 1rem;
+    max-width:980px; margin:0 auto;
+  }
+  .section{
+    background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8));
+    border-radius:16px;
+    padding:1.1rem;
+    margin-bottom:1rem;
+    box-shadow:0 8px 30px rgba(0,0,0,0.04);
+    opacity:0;
+    transform: translateY(18px);
+    transition:all .7s cubic-bezier(.2,.9,.3,1);
+  }
+  .section.show{opacity:1; transform:translateY(0)}
+  .section h3{margin:0 0 .45rem 0; font-size:1.05rem}
+  .flex{display:flex; gap:1rem; align-items:center; flex-wrap:wrap}
+
+  /* gallery */
+  .gallery{
+    display:flex;
+    gap:.6rem;
+    overflow-x:auto;
+    padding:.5rem 0;
+    scrollbar-width:none;
+  }
+  .gallery img{height:140px; border-radius:12px; object-fit:cover; box-shadow: 0 8px 30px rgba(0,0,0,0.08)}
+
+  /* small footer */
+  footer{padding:1.6rem 1rem; text-align:center; color:#6b6b6b; font-size:.95rem}
+
+  /* animations */
+  @keyframes fadeUp {
+    to{opacity:1; transform:translateY(0) scale(1)}
+  }
+
+  /* confetti top */
+  .confetti{
+    position:absolute;
+    inset:auto 0 0 0;
+    height:140px;
+    pointer-events:none;
+    z-index:3;
+  }
+  .confetti .piece{
+    position:absolute;
+    width:10px; height:14px;
+    border-radius:2px;
+    opacity:.95;
+    transform-origin:center;
+    animation:fall linear infinite;
+  }
+  @keyframes fall {
+    from{transform:translateY(-10vh) rotate(0deg)}
+    to{transform:translateY(110vh) rotate(360deg)}
+  }
+
+  /* responsiveness */
+  @media (max-width:640px){
+    .names{font-size:2.1rem}
+    .hero{padding:2rem 1rem}
+    .modal__card{padding:.85rem}
+  }
+</style>
 </head>
-<body style="margin:0; padding:0; background:#000; display:flex; align-items:center; justify-content:center; height:100vh;">
-<audio autoplay loop>
-  <source src="music.mp3" type="audio/mpeg">
+<body>
+
+<section class="hero" role="banner" aria-label="Thiệp mời">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="hero__overlay" aria-hidden="true"></div>
+
+  <div class="card" role="main">
+    <p class="subtitle">Trân trọng kính mời</p>
+    <h1 class="names" id="names">Đức Mạnh <span style="display:inline-block; margin:0 .45rem;">&</span> Khánh Linh</h1>
+
+    <div class="meta">
+      <div class="pill">12:00 • 12 Tháng 12, 2025</div>
+      <div class="pill">Nhà Hàng Hoa Trắng, Hà Nội</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="rsvpBtn" aria-haspopup="dialog">RSVP</button>
+      <button class="btn secondary" id="openMap">Bản đồ</button>
+      <button class="btn secondary" id="shareBtn">Sao chép link</button>
+      <button class="btn secondary" id="playBtn" aria-pressed="false">Bật nhạc</button>
+    </div>
+  </div>
+
+  <!-- confetti pieces -->
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+</section>
+
+<div class="sections">
+  <div class="section" id="section-1">
+    <h3>Chương trình</h3>
+    <div class="flex">
+      <div><strong>12:00</strong> — Tiệc chính</div>
+      <div><strong>15:00</strong> — Chụp hình gia đình</div>
+    </div>
+  </div>
+
+  <div class="section" id="section-2">
+    <h3>Địa điểm</h3>
+    <p>Nhà Hàng Hoa Trắng • Số 123 Đường Hạnh Phúc, Hà Nội.</p>
+    <div style="margin-top:.7rem">
+      <iframe
+        title="map"
+        loading="lazy"
+        style="width:100%;height:220px;border:0;border-radius:12px;overflow:hidden"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3875.1!2d105.8!3d21.0!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0:0x0!2zMjHCsDAwJzAwLjAiTiAxMDXCsDQ4JzAwLjAiRQ!5e0!3m2!1svi!2s!4v1600000000000!5m2!1svi!2s">
+      </iframe>
+    </div>
+  </div>
+
+  <div class="section" id="section-3">
+    <h3>Gallery</h3>
+    <div class="gallery" id="gallery">
+      <img alt="Ảnh 1" src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop">
+      <img alt="Ảnh 2" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop">
+      <img alt="Ảnh 3" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop">
+    </div>
+  </div>
+</div>
+
+<footer>
+  <small>Thiệp mời điện tử • Đức Mạnh & Khánh Linh</small>
+</footer>
+
+<!-- RSVP Modal -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal__card" role="document" aria-labelledby="modal-title">
+    <h3 id="modal-title">Phản hồi (RSVP)</h3>
+    <form id="rsvpForm">
+      <div class="row">
+        <input required type="text" name="fullname" placeholder="Họ và tên" />
+      </div>
+      <div class="row">
+        <input required type="email" name="email" placeholder="Email (nếu có)" />
+      </div>
+      <div class="row">
+        <input type="text" name="guests" placeholder="Số khách (bao gồm bạn)" />
+      </div>
+      <div class="row">
+        <textarea name="note" placeholder="Lời chúc / Ghi chú (tuỳ chọn)"></textarea>
+      </div>
+
+      <div style="display:flex; gap:.6rem; justify-content:flex-end; margin-top:.6rem">
+        <button type="button" class="btn secondary" id="cancelModal">Hủy</button>
+        <button type="submit" class="btn">Gửi phản hồi</button>
+      </div>
+    </form>
+
+    <div id="thankYou" style="display:none; margin-top:1rem; text-align:center;">
+      <h3>Cảm ơn bạn!</h3>
+      <p>Chúng tôi đã nhận phản hồi của bạn.</p>
+    </div>
+  </div>
+</div>
+
+<!-- audio (hidden, controllable) -->
+<audio id="bgAudio" loop preload="auto">
+  <source src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_3b3e7b6b0a.mp3?filename=romantic-6168.mp3" type="audio/mpeg">
+  Your browser does not support audio.
 </audio>
-<h1 style="color:white; font-family:sans-serif;">Đang phát nhạc...</h1>
+
+<script>
+/* --------------------------
+   Helper & DOM references
+   -------------------------- */
+const rsvpBtn = document.getElementById('rsvpBtn');
+const modal = document.getElementById('modal');
+const cancelModal = document.getElementById('cancelModal');
+const rsvpForm = document.getElementById('rsvpForm');
+const thankYou = document.getElementById('thankYou');
+const openMap = document.getElementById('openMap');
+const shareBtn = document.getElementById('shareBtn');
+const playBtn = document.getElementById('playBtn');
+const bgAudio = document.getElementById('bgAudio');
+const confettiNode = document.getElementById('confetti');
+
+/* --------------------------
+   Modal open / close
+   -------------------------- */
+rsvpBtn.addEventListener('click', () => {
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  // trap focus (basic)
+  setTimeout(()=> modal.querySelector('input').focus(), 80);
+});
+cancelModal.addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=> {
+  if(e.target === modal) closeModal();
+});
+function closeModal(){
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  // reset view
+  thankYou.style.display='none';
+  rsvpForm.style.display='';
+}
+
+/* --------------------------
+   RSVP submit (demo)
+   -------------------------- */
+rsvpForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  // extract values
+  const data = new FormData(rsvpForm);
+  const payload = Object.fromEntries(data);
+  // Simulate send: here you can call fetch(...) to your backend
+  console.log('RSVP payload', payload);
+
+  // show thank you
+  rsvpForm.style.display='none';
+  thankYou.style.display='block';
+  // small confetti burst:
+  burstConfetti(16);
+});
+
+/* --------------------------
+   Play / Pause background audio
+   -------------------------- */
+let playing = false;
+playBtn.addEventListener('click', async ()=>{
+  if(!playing){
+    try {
+      await bgAudio.play();
+      playing = true;
+      playBtn.textContent = 'Tắt nhạc';
+      playBtn.setAttribute('aria-pressed','true');
+    } catch (err){
+      console.warn('Audio play failed', err);
+      alert('Trình duyệt chặn autoplay. Nhấn OK để bật nhạc.');
+      bgAudio.play(); // try again after user gesture
+    }
+  } else {
+    bgAudio.pause();
+    playing = false;
+    playBtn.textContent = 'Bật nhạc';
+    playBtn.setAttribute('aria-pressed','false');
+  }
+});
+
+/* --------------------------
+   Share / copy link
+   -------------------------- */
+shareBtn.addEventListener('click', async () => {
+  const url = location.href;
+  if(navigator.clipboard){
+    await navigator.clipboard.writeText(url);
+    shareBtn.textContent = 'Đã sao chép!';
+    setTimeout(()=> shareBtn.textContent = 'Sao chép link', 1800);
+  } else {
+    prompt('Sao chép link:', url);
+  }
+});
+
+/* --------------------------
+   Open Map button (Google Maps)
+   -------------------------- */
+openMap.addEventListener('click', ()=>{
+  const mapUrl = 'https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+H%C3%A0ng+Hoa+Tr%E1%BA%B9ng+H%C3%A0+N%E1%BB%99i';
+  window.open(mapUrl, '_blank');
+});
+
+/* --------------------------
+   IntersectionObserver reveal sections
+   -------------------------- */
+const sections = document.querySelectorAll('.section');
+const obs = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('show');
+      obs.unobserve(entry.target);
+    }
+  });
+},{threshold:0.18});
+
+sections.forEach(s => obs.observe(s));
+
+/* --------------------------
+   Confetti generator
+   -------------------------- */
+function makeConfettiPiece(i){
+  const el = document.createElement('div');
+  el.className = 'piece';
+  // random colors
+  const colors = ['#ffd3da','#fbe6b2','#bdebd6','#f7c8ff','#ffd8a8'];
+  el.style.background = colors[Math.floor(Math.random()*colors.length)];
+  el.style.left = (Math.random()*100) + '%';
+  el.style.top = (-Math.random()*8) + 'vh';
+  el.style.width = (8 + Math.random()*10) + 'px';
+  el.style.height = (10 + Math.random()*12) + 'px';
+  el.style.opacity = 0.9;
+  el.style.animationDuration = (3 + Math.random()*4) + 's';
+  el.style.animationDelay = (Math.random()*0.8) + 's';
+  return el;
+}
+
+function burstConfetti(count = 12){
+  const root = confettiNode;
+  for(let i=0;i<count;i++){
+    const p = makeConfettiPiece(i);
+    root.appendChild(p);
+    // remove after animation
+    setTimeout(()=> p.remove(), 7000);
+  }
+}
+
+/* initial small confetti */
+burstConfetti(10);
+
+/* --------------------------
+   Tiny entrance name effect
+   -------------------------- */
+const names = document.getElementById('names');
+names.addEventListener('mouseenter', ()=>{
+  names.animate([{transform:'scale(1)'},{transform:'scale(1.03)'},{transform:'scale(1)'}], {duration:520, easing:'cubic-bezier(.2,.9,.3,1')});
+});
+
+/* --------------------------
+   Accessibility: ESC to close modal
+   -------------------------- */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeModal();
+});
+
+/* --------------------------
+   Smooth scroll for anchor links (if any)
+   -------------------------- */
+document.documentElement.style.scrollBehavior = 'smooth';
+</script>
 </body>
 </html>
